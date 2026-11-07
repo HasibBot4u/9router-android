@@ -1,0 +1,60 @@
+
+name: 9Router Android Compatibility Preflight
+
+on:
+  push:
+    branches:
+      - android-compat
+
+permissions:
+  contents: read
+
+jobs:
+  linux-build-check:
+    name: Verify original 9Router production build
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    steps:
+      - name: Checkout 9Router
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.23.4
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Next.js application
+        run: npm run build
+
+      - name: Verify production output
+        shell: bash
+        run: |
+          set -e
+
+          test -d .next/standalone
+          test -d .next/static
+          test -d public
+          test -d open-sse
+          test -f custom-server.js
+
+          echo "Standalone build exists."
+          echo "9Router production build check passed."
+
+      - name: Save build information
+        run: |
+          echo "Node version:"
+          node --version
+
+          echo "NPM version:"
+          npm --version
+
+          echo "Standalone directory size:"
+          du -sh .next/standalone
+
+          echo "Static directory size:"
+          du -sh .next/static
