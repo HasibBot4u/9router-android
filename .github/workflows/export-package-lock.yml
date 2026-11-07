@@ -9,11 +9,15 @@ permissions:
 
 jobs:
   generate-lock:
+    name: Generate and upload package lock
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
       - name: Checkout 9Router
         uses: actions/checkout@v4
+        with:
+          ref: android-compat
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -32,7 +36,15 @@ jobs:
 
           test -s package-lock.json
 
-      - name: Upload package lock
+      - name: Verify generated lockfile
+        run: |
+          node -e "
+          const p = require('./package-lock.json');
+          console.log('Lockfile version:', p.lockfileVersion);
+          console.log('Package count:', Object.keys(p.packages || {}).length);
+          "
+
+      - name: Upload package-lock.json
         uses: actions/upload-artifact@v4
         with:
           name: 9router-package-lock
