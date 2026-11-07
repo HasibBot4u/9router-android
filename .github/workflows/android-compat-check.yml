@@ -25,10 +25,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22.23.4
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Verify package lock exists
+        run: test -s package-lock.json
 
       - name: Install dependencies
         run: |
-          npm install \
+          npm ci \
             --no-audit \
             --no-fund \
             --fetch-retries=5 \
@@ -49,7 +54,7 @@ jobs:
           test -f custom-server.js
 
           echo "Standalone build exists."
-          echo "9Router production build check passed."
+          echo "Production output verified."
 
       - name: Save build information
         run: |
@@ -59,8 +64,13 @@ jobs:
           echo "NPM version:"
           npm --version
 
+          echo "Package lock:"
+          ls -lh package-lock.json
+
           echo "Standalone directory size:"
           du -sh .next/standalone
 
           echo "Static directory size:"
           du -sh .next/static
+
+          echo "9Router production build check passed."
